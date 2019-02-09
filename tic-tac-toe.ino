@@ -12,6 +12,7 @@ int anodePin3 = 9;
 
 int time1 = 0;
 int time2 = 0;
+int time3 = 0;
 
 led startup = {0,0};
 int leds[3][3];
@@ -30,7 +31,7 @@ void setup()
  // lights up the first led at start
  leds[startup.cathode][startup.anode] = 1;
  leds[1][1] = 1;
- //leds[2][2] = 1;
+ leds[2][2] = 1;
 }
 
 void loop() 
@@ -41,10 +42,12 @@ void loop()
 
 int CheckSelectPin()
 {
+  int period = 50;
+  int timeNow = millis();
   int selectPrevious = digitalRead(selectPin);
-  delay(50);
+  while(millis() < timeNow + period) {}
   int selectNow = digitalRead(selectPin);
-  if(selectNow == LOW && selectPrevious != selectNow)  //if pressed selects
+  if(selectNow == LOW)  //if pressed selects
   {
    leds[startup.cathode][startup.anode] = 1; 
   }
@@ -52,14 +55,12 @@ int CheckSelectPin()
 
 int CheckMovePin()
 {
-  /*int movePrevious = digitalRead(movePin);
-  //delay fucks up the leds use milis instead
-  /*delay(50);*/
   int moveNow = digitalRead(movePin);
-  if(moveNow == LOW) // && movePrevious != moveNow)  //if pressed light up next 
+  if(moveNow == LOW) //if pressed light up next 
   {
     time2 = millis();
-    if(time2 - time1 >= 50)
+    //its a feature
+    if(time2 - time1 >= 200) // 200 ms are enough to encounter the fastest push of the button
     {
       leds[startup.cathode][startup.anode] = 0;
       startup = next(startup);
@@ -110,7 +111,6 @@ void LightUp(led current)
   ClearAll();
   digitalWrite(current.anode, HIGH);
   digitalWrite(current.cathode, LOW);
-  //delay(50);
 }
 
 int LightSelected()  //lights up the pins with 1 at start of the loop
@@ -125,7 +125,6 @@ int LightSelected()  //lights up the pins with 1 at start of the loop
         selectedNum++;
         led led = {c, a};
         LightUp(led);
-       // delayMicroseconds(100);
       }
     }
   }
