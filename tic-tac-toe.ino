@@ -10,10 +10,6 @@ int anodePin1 = 11;
 int anodePin2 = 10;
 int anodePin3 = 9;
 
-int time1 = 0;
-int time2 = 0;
-int time3 = 0;
-
 led startup = {0,0};
 int leds[3][3];
 
@@ -38,35 +34,44 @@ void loop()
 {
   LightSelected();
   CheckMovePin(); // if moved -> 0 the current pos and puts 1 to the next posssible pos
+  CheckSelectPin();
+
 }
 
 int CheckSelectPin()
 {
-  int period = 50;
+  int period = 10;
   int timeNow = millis();
   int selectPrevious = digitalRead(selectPin);
-  while(millis() < timeNow + period) {}
-  int selectNow = digitalRead(selectPin);
-  if(selectNow == LOW)  //if pressed selects
+  while(millis() < timeNow + period)
   {
-   leds[startup.cathode][startup.anode] = 1; 
+    LightSelected();
+    int selectNow = digitalRead(selectPin);
+    if(selectNow == LOW && selectNow != selectPrevious)  //if pressed select
+    {
+      led lastLed = {2,2};
+      startup = next(lastLed);
+      break;
+    }
+    selectPrevious = selectNow;
   }
 }
 
 int CheckMovePin()
 {
-  int moveNow = digitalRead(movePin);
-  if(moveNow == LOW) //if pressed light up next 
+  int period = 10;
+  int timeNow = millis();
+  int movePrevious = digitalRead(movePin);
+  while(millis() < timeNow + period) // delay that ensures taht the leds will glow with full capacity
   {
-    time2 = millis();
-    //its a feature
-    if(time2 - time1 >= 200) // 200 ms are enough to encounter the fastest push of the button
-    {
-      leds[startup.cathode][startup.anode] = 0;
-      startup = next(startup);
-      leds[startup.cathode][startup.anode] = 1;
-      time1 = time2;
-    }
+    LightSelected();
+  }
+  int moveNow = digitalRead(movePin);
+  if(moveNow == LOW && moveNow != movePrevious)  //if pressed move
+  {
+    leds[startup.cathode][startup.anode] = 0;
+    startup = next(startup);
+    leds[startup.cathode][startup.anode] = 1; 
   }
 }
 
@@ -139,4 +144,17 @@ void ClearAll()
  digitalWrite(cathodePin1, HIGH);
  digitalWrite(cathodePin2, HIGH);
  digitalWrite(cathodePin3, HIGH);
+}
+
+void printLeds()
+{
+  for(int c = 0; c < 3; c++)
+  {
+    for(int a = 0; a < 3; a++)
+    {
+      Serial.print(leds[c][a]);
+    }
+    Serial.println();
+  }
+  Serial.println(); 
 }
